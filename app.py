@@ -92,9 +92,9 @@ def get_samples(sample):
     sample_df = sample_df.sort_values(by=sample, axis=0, ascending=False)
 
     sample_df['otu_id'] = sample_df['otu_id'].apply(lambda x: str(x))
-    sample_df[sample] = df_sample[sample].apply(lambda x: str(x))
+    sample_df[sample] = sample_df[sample].apply(lambda x: str(x))
     result={}
-    for j in df_sample.keys():
+    for j in sample_df.keys():
         result[j] = list(sample_df[j])
     return jsonify(result)
 

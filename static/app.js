@@ -68,7 +68,7 @@ function intialize_page(){
         hoverinfo:'text',
         hole: .4,
         type: 'pie'
-    )];
+    }];
 
     var layout = {
         title: "OTU Values Frequency",
@@ -132,14 +132,14 @@ function intialize_page(){
         }
     });
 
-    var bio_data = [(
-        values: otu_val,
-        labels: otu_id,
-        text: otu_desc,
-        hoverinfo: 'text',
+    var bio_data = [{
+        values:otu_values,
+        labels:otu_ids,
+        text:otu_descriptions,
+        hoverinfo:'text',
         hole: .4,
         type: 'pie'
-    )];
+    }];
 
     var layout = {
         title: "OTU Values Frequency",
@@ -148,15 +148,15 @@ function intialize_page(){
     };
     Plotly.plot('pieplot', bio_data, layout);
 
-    bio_data = [(
-        y: otu_val,
-        x: otu_id,
+    bio_data = [{
+        y:otu_values,
+        x:otu_ids,
         mode: 'markers',
-        marker:{
-            color:otu_id,
-            size:otu_val
-        }
-    )];
+          marker:{
+            color:otu_ids,
+            size:otu_values
+          }
+      }];
 
     layout={
         title:"OTU Values for each OTU ID",
