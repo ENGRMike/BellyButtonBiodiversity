@@ -7,9 +7,9 @@
     <title>Belly Button Biodiversity</title>
     
     <!--call script for minified JS-->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/4.11.0/d3.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/4.7.3/d3.min.js"></script>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
-     
+
     <!--call script for plotly-->
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 
@@ -31,20 +31,10 @@
                     <div class="panel-body box-body">
                         <div class="form-group">
                             <label for="dataselect">SELECT Sample:</label>
-                            <select id="dataselect" onchange="optionChanged(this.value)"></select>
+                            <select id="dataselect" onchange="intialize_page(this.value)"></select>
                         </div>
                     </div>
                 </div>
-            </div>
-            <div class="col-md-5 box-body">
-                <div id = "pieplot"></div>
-            </div>
-            <div class="col-md-5 box-body">
-                <div id="bubbleplot"></div>>
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-md-2">
                 <div class="panel panel-default box-body">
                     <table class="table table-striped">
                         <tbody id='table'>
@@ -52,6 +42,12 @@
                     </table>
                 </div>
             </div>
+            <div class="col-md-10">
+                <div id = "pieplot"></div>
+            </div>
+        </div>
+        <div class="row">
+            <div id="bubbleplot"></div>
         </div>
     </div>
     <!--call js app-->

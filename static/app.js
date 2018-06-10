@@ -1,173 +1,89 @@
 // initiate the dropdown button
-function dropdown_select() {
-    Plotly.d3.json('/names', function(error, response){
+Plotly.d3.json('/names', function(error, names){
+    if (error) throw error;
+    for (var i = 0; i < names.length; i++){
+        d3.select("#dataselect").append("option").attr("value",`${names[i]}`).text(`${names[i]}`)
+    }
+});
+
+// Create initial Values Table
+Plotly.d3.json("/metadata/BB_940", function(error, metadata) {
+    if (error) throw error;
+    d3.select("#table").append('li').text(`AGE: ${metadata.AGE}`)
+    d3.select("#table").append('li').text(`BBTYPE: ${metadata.BBTYPE}`)
+    d3.select("#table").append('li').text(`ETHNICITY: ${metadata.ETHNICITY}`)
+    d3.select("#table").append('li').text(`LOCATION: ${metadata.LOCATION}`)
+    d3.select("#table").append('li').text(`SAMPLEID: ${metadata.SAMPLEID}`)
+});
+
+// Function upon opject selection change
+function intialize_page(select) {
+    console.log(select);
+    d3.selectAll("li").remove();
+    // Create new table
+    Plotly.d3.json(`/metadata/${select}`, function(error, response){
         if (error) throw error;
-        for (var i = 0; i < response.length; i++){
-            Plotly.d3.select("#dataselect").append("option").attr("value",response[i]).text(response[i]);
-        }
+        d3.select("#table").append('li').text(`AGE: ${response.AGE}`)
+        d3.select("#table").append('li').text(`BBTYPE: ${response.BBTYPE}`)
+        d3.select("#table").append('li').text(`ETHNICITY: ${response.ETHNICITY}`)
+        d3.select("#table").append('li').text(`LOCATION: ${response.LOCATION}`)
+        d3.select("#table").append('li').text(`SAMPLEID: ${response.SAMPLEID}`)
     })
-}
 
-// Create the table for each sample
-function load_table(sample){
-    var url = '/metadata' + sample;
-
-    Plotly.d3.json(url, function(error, response) {
+    //create new plot
+    Plotly.d3.json(`/samples/${select}`, function(error, response){
         if (error) throw error;
-        var table = Plotly.d3.select('#table')
-
-        //remove the previous table
-        table.selectAll('tr').remove();
-        table.selectAll('td').remove();
-        table.selectAll('thread').remove();
-        table.append('thread').text('Sample Metadata').style('box-body');
-
-        for (var item in response) {
-            var cell = response[item];
-            var row = table.append('tr');
-            row.append('td').text(key);
-            row.append('td').text(cell);
+        var otu_val = [];
+        var otu_id = [];
+        var otu_desc = [];
+                
+        for(var i = 0; i<10; i++){
+            otu_val.push(response.sample_values[i]);
+            otu_id.push(response.otu_ids[i]);
         }
+        Plotly.d3.json(`/otu`, function(error, desc){
+            if (error) throw error;
+            for(var j = 0; j<otu_id.length; j++){
+                otu_desc.push(desc[j]);
+            }
+                   
+            var trace1 = [{
+                values:otu_val,
+                labels:otu_id,
+                text:otu_desc,
+                hoverinfo:otu_desc,
+                type: 'pie'
+            }];
+            
+            var layout = {
+                title: `OTU Values Frequency for sample ${select}`,
+                height: 400,
+                width: 1000
+            };
+            Plotly.plot('pieplot', trace1, layout);
+
+            var trace2 = [{
+                y:response.otu_ids,
+                x:response.sample_values,
+                mode: 'markers',
+                marker:{
+                    color:otu_id,
+                    size:otu_val
+                }
+            }];
+
+            layout={
+                title:`OTU Values for each OTU ID for sample ${select}`,
+                height: 800,
+                width: 1400,
+                xaxis:{
+                    title:"OTU ID"
+                },
+                yaxis:{
+                    title:"Values"
+                }
+            }
+            Plotly.plot('bubbleplot', trace2, layout);
+        })
     })
-}
-
-function intialize_page(){
-    dropdown_select()
-
-    var first_val = "BB_940";
-    load_table(first_val);
-
-
-    var otu_val = [];
-    var otu_id = [];
-    var otu_desc = [];
-
-    var url = '/samples/' + first_val;
-
-    Plotly.d3.json(url, function(error, response){
-        if (error) throw error;
-
-        for(var i = 0; i<10; i++){
-            otu_val.push(response[first_val][i]);
-            otu_id.push(response['otu_id'][i]);
-        }
-    });
-
-    url = "/otu_desc"
-    Plotly.d3.json(url, function(error, response){
-        if (error) throw error;
-        for(var i = 0; i<10; i++){
-            otu_desc.push(response[otu_id[i]]);
-        }
-    });
-
-    var bio_data = [{
-        values:otu_values,
-        labels:otu_ids,
-        text:otu_descriptions,
-        hoverinfo:'text',
-        hole: .4,
-        type: 'pie'
-    }];
-
-    var layout = {
-        title: "OTU Values Frequency",
-        height: 400,
-        width: 877
-    };
-    Plotly.plot('pieplot', bio_data, layout);
-
-    bio_data = [{
-        y:otu_values,
-        x:otu_ids,
-        mode: 'markers',
-          marker:{
-            color:otu_ids,
-            size:otu_values
-          }
-      }];
-
-    layout={
-        title:"OTU Values for each OTU ID",
-        height: 400,
-        width: 1010,
-        xaxis:{
-            title:"OTU ID"
-        },
-        yaxis:{
-            title:"Values"
-        }
-    };
-    Plotly.plot('bubbleplot', bio_data, layout);
-}
-
-
-function intialize_page(){
-    dropdown_select()
-
-    var first_val = "BB_940";
-    load_table(first_val);
-
-
-    var otu_val = [];
-    var otu_id = [];
-    var otu_desc = [];
-
-    var url = '/samples/' + first_val;
-
-    Plotly.d3.json(url, function(error, response){
-        if (error) throw error;
-
-        for(var i = 0; i<10; i++){
-            otu_val.push(response[first_val][i]);
-            otu_id.push(response['otu_id'][i]);
-        }
-    });
-
-    url = "/otu_desc"
-    Plotly.d3.json(url, function(error, response){
-        if (error) throw error;
-        for(var i = 0; i<10; i++){
-            otu_desc.push(response[otu_id[i]]);
-        }
-    });
-
-    var bio_data = [{
-        values:otu_values,
-        labels:otu_ids,
-        text:otu_descriptions,
-        hoverinfo:'text',
-        hole: .4,
-        type: 'pie'
-    }];
-
-    var layout = {
-        title: "OTU Values Frequency",
-        height: 400,
-        width: 877
-    };
-    Plotly.plot('pieplot', bio_data, layout);
-
-    bio_data = [{
-        y:otu_values,
-        x:otu_ids,
-        mode: 'markers',
-          marker:{
-            color:otu_ids,
-            size:otu_values
-          }
-      }];
-
-    layout={
-        title:"OTU Values for each OTU ID",
-        height: 400,
-        width: 1010,
-        xaxis:{
-            title:"OTU ID"
-        },
-        yaxis:{
-            title:"Values"
-        }
-    };
-    Plotly.plot('bubbleplot', bio_data, layout);
-}
+};

@@ -1,5 +1,4 @@
 # IMPORTS
-import pandas as pd
 
 from sqlalchemy.ext.automap import automap_base
 from sqlalchemy.orm import Session
@@ -21,9 +20,6 @@ samples_meta = Base.classes.samples_metadata
 
 session = Session(engine)
 
-samples_df = pd.read_sql_table('samples', engine)
-otu_df = pd.read_sql_table('otu', engine)
-
 app = Flask(__name__)
 
 #Create Routes
@@ -34,14 +30,14 @@ def home():
 @app.route("/names")
 def sample_names():
     results = session.query(samples_meta.SAMPLEID).all()
-    results = ['BD_' + str(id[0] for id in results)]
+    results = ['BB_' + str(name[0]) for name in results]
 
     return jsonify(results)
 
 @app.route("/otu")
 def otu_description():
-    results = session.query(otu.lowest_taxonomi_unit_found).all()
-    results = [str(results[0]) for result in results]
+    results = session.query(otu.lowest_taxonomic_unit_found).all()
+    results = [str(result[0]) for result in results]
     return jsonify(results)
 
 @app.route("/metadata/<sample>")
@@ -78,25 +74,19 @@ def get_wfreq(sample):
     except:
         return 'not found'
 
-@app.route('/otu_desc')
-def get_otu_desc():
-    otus_df = otu_df.copy(deep=True)
-    otus_df['otu_id']  = otus_df['otu_id'].apply(lambda x: str(x))
-    otus_df.set_index('otu_id', inplace=True)
-    response = otus_df['lowest_taxonomic_unit_found'].to_dict()
-    return jsonify(response)
-
 @app.route('/samples/<sample>')
 def get_samples(sample):
-    sample_df = samples_df[['otu_id', sample]]
-    sample_df = sample_df.sort_values(by=sample, axis=0, ascending=False)
+    results = session.query(samples.otu_id, getattr(samples, sample)).order_by(getattr(samples, sample).desc())
+    otu_ids = []
+    sample_values = []
 
-    sample_df['otu_id'] = sample_df['otu_id'].apply(lambda x: str(x))
-    sample_df[sample] = sample_df[sample].apply(lambda x: str(x))
-    result={}
-    for j in sample_df.keys():
-        result[j] = list(sample_df[j])
-    return jsonify(result)
+    for item, value in results:
+        otu_ids.append(item)
+        sample_values.append(value)
+
+    results_dict = {"otu_ids": otu_ids, "sample_values": sample_values}
+    return jsonify(results_dict)
+
 
 if __name__ == "__main__":
     app.run(debug=False)
